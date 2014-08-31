@@ -45,9 +45,11 @@ EOF
 }
 
 rotate_log() {
-  if [ `wc -l "$LOG_FILE" | cut -d ' ' -f1` -gt $LOG_LIMIT ]; then
-    [ -e "$LOG_FILE.old" ] && rm -f "$LOG_FILE.old"
-    mv "$LOG_FILE" "$LOG_FILE.old"
+  if [ -f "$LOG_FILE" ]; then
+    if [ `wc -l "$LOG_FILE" | cut -d ' ' -f1` -gt $LOG_LIMIT ]; then
+      [ -e "$LOG_FILE.old" ] && rm -f "$LOG_FILE.old"
+      mv "$LOG_FILE" "$LOG_FILE.old"
+    fi
   fi
 }
 
