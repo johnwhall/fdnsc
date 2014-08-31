@@ -16,7 +16,12 @@ DEFAULT_UPDATE_PERIOD=60
 UPDATE_PERIOD="$DEFAULT_UPDATE_PERIOD"
 
 # Read config file
-. "$CONFIG_FILE"
+if [ -f "$CONFIG_FILE" ]; then
+  . "$CONFIG_FILE"
+else
+  echo "$CONFIG_FILE does not exist. FDNSC requires UPDATE_HASH configured."
+  exit 1
+fi
 
 usage() {
   cat << EOF
