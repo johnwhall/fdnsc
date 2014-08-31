@@ -3,7 +3,6 @@
 # Globals
 CONFIG_FILE=/etc/fdnsc.conf
 URL_BASE=https://freedns.afraid.org/dynamic/update.php
-TEMP_FILE=/tmp/fdnsc-$$
 
 # Defaults
 DEFAULT_PID_FILE=/run/fdnsc.pid
@@ -78,9 +77,8 @@ EOF
   # Start updating
   while [ 1 ]; do
     rotate_log # rotate the log file if necessary
-    wget -q -O "$TEMP_FILE" "$URL_BASE?$UPDATE_HASH"
-    cat "$TEMP_FILE" >> "$LOG_FILE"
-    rm "$TEMP_FILE"
+    FDNS=$(wget -q -O - "$URL_BASE?$UPDATE_HASH")
+    echo "$FDNS" >> "$LOG_FILE"
     sleep "$UPDATE_PERIOD"
   done
 
