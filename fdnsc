@@ -6,7 +6,7 @@ URL_BASE=https://freedns.afraid.org/dynamic/update.php
 TEMP_FILE=/tmp/fdnsc-$$
 
 # Defaults
-DEFAULT_PID_FILE=/var/lib/fdnsc/pid
+DEFAULT_PID_FILE=/run/fdnsc.pid
 PID_FILE="$DEFAULT_PID_FILE"
 DEFAULT_LOG_FILE=/var/log/fdnsc.log
 LOG_FILE="$DEFAULT_LOG_FILE"
@@ -71,7 +71,6 @@ EOF
   [ -z "$UPDATE_HASH" ] && usage && exit 1
 
   # Store our PID
-  mkdir -p `dirname "$PID_FILE"`
   echo $$ > "$PID_FILE"
 
   # Start updating
