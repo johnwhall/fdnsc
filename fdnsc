@@ -3,20 +3,24 @@
 # Globals
 CONFIG_FILE=/etc/fdnsc.conf
 URL_BASE=https://freedns.afraid.org/dynamic/update.php
-TEMP_FILE=/tmp/fdnsc-$$
 
 # Defaults
-DEFAULT_PID_FILE=/var/lib/fdnsc/pid
+DEFAULT_PID_FILE=/run/fdnsc.pid
 PID_FILE="$DEFAULT_PID_FILE"
 DEFAULT_LOG_FILE=/var/log/fdnsc.log
 LOG_FILE="$DEFAULT_LOG_FILE"
 DEFAULT_LOG_LIMIT=7200
 LOG_LIMIT="$DEFAULT_LOG_LIMIT"
-DEFAULT_UPDATE_PERIOD=60
+DEFAULT_UPDATE_PERIOD=3600
 UPDATE_PERIOD="$DEFAULT_UPDATE_PERIOD"
 
 # Read config file
-. "$CONFIG_FILE"
+if [ -f "$CONFIG_FILE" ]; then
+  . "$CONFIG_FILE"
+else
+  echo "$CONFIG_FILE does not exist. FDNSC requires UPDATE_HASH configured."
+  exit 1
+fi
 
 usage() {
   cat << EOF
@@ -40,9 +44,11 @@ EOF
 }
 
 rotate_log() {
-  if [ `wc -l "$LOG_FILE" | cut -d ' ' -f1` -gt $LOG_LIMIT ]; then
-    [ -e "$LOG_FILE.old" ] && rm -f "$LOG_FILE.old"
-    mv "$LOG_FILE" "$LOG_FILE.old"
+  if [ -f "$LOG_FILE" ]; then
+    if [ `wc -l "$LOG_FILE" | cut -d ' ' -f1` -gt $LOG_LIMIT ]; then
+      [ -e "$LOG_FILE.old" ] && rm -f "$LOG_FILE.old"
+      mv "$LOG_FILE" "$LOG_FILE.old"
+    fi
   fi
 }
 
@@ -66,15 +72,13 @@ EOF
   [ -z "$UPDATE_HASH" ] && usage && exit 1
 
   # Store our PID
-  mkdir -p `dirname "$PID_FILE"`
   echo $$ > "$PID_FILE"
 
   # Start updating
   while [ 1 ]; do
     rotate_log # rotate the log file if necessary
-    wget -q -O "$TEMP_FILE" "$URL_BASE?$UPDATE_HASH"
-    cat "$TEMP_FILE" >> "$LOG_FILE"
-    rm "$TEMP_FILE"
+    FDNS=$(wget -q -O - "$URL_BASE?$UPDATE_HASH")
+    echo "$FDNS" >> "$LOG_FILE"
     sleep "$UPDATE_PERIOD"
   done
 
