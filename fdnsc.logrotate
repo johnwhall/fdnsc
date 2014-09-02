@@ -1,0 +1,5 @@
+/var/log/fdnsc.log {
+   missingok
+   notifempty
+   maxsize 300k
+}
