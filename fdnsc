@@ -9,8 +9,6 @@ DEFAULT_PID_FILE=/run/fdnsc.pid
 PID_FILE="$DEFAULT_PID_FILE"
 DEFAULT_LOG_FILE=/var/log/fdnsc.log
 LOG_FILE="$DEFAULT_LOG_FILE"
-DEFAULT_LOG_LIMIT=7200
-LOG_LIMIT="$DEFAULT_LOG_LIMIT"
 DEFAULT_UPDATE_PERIOD=3600
 UPDATE_PERIOD="$DEFAULT_UPDATE_PERIOD"
 
@@ -37,19 +35,8 @@ UPDATE_HASH   - The hash from your direct update URL.  This is everything after
 Optional config variables:
 PID_FILE      - The file to save the process id (default: "$DEFAULT_PID_FILE")
 LOG_FILE      - The log file to write to (default: "$DEFAULT_LOG_FILE")
-LOG_LIMIT     - The maximum number of lines in the log file before rotating
-                (default: "$DEFAULT_LOG_LIMIT")
 UPDATE_PERIOD - The update period in seconds (default: "$DEFAULT_UPDATE_PERIOD")
 EOF
-}
-
-rotate_log() {
-  if [ -f "$LOG_FILE" ]; then
-    if [ `wc -l "$LOG_FILE" | cut -d ' ' -f1` -gt $LOG_LIMIT ]; then
-      [ -e "$LOG_FILE.old" ] && rm -f "$LOG_FILE.old"
-      mv "$LOG_FILE" "$LOG_FILE.old"
-    fi
-  fi
 }
 
 # Check the requested action
@@ -76,7 +63,6 @@ EOF
 
   # Start updating
   while [ 1 ]; do
-    rotate_log # rotate the log file if necessary
     FDNS=$(wget -q -O - "$URL_BASE?$UPDATE_HASH")
     echo "$FDNS" >> "$LOG_FILE"
     sleep "$UPDATE_PERIOD"
